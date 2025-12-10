@@ -1,0 +1,1 @@
+# EARTHQUAKE-MAGNITUDE-SIMULATOR-Richter-Scale-Simulation-
