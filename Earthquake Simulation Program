@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+#define LOG_FILE "earthquake_log.txt"
+
+float generateMagnitude() {
+    return ((float)rand() / RAND_MAX) * 9.0;
+}
+
+void classify(float m, char category[]) {
+    if (m < 2.0)
+        strcpy(category, "Micro");
+    else if (m < 3.0)
+        strcpy(category, "Very Minor");
+    else if (m < 4.0)
+        strcpy(category, "Minor");
+    else if (m < 5.0)
+        strcpy(category, "Light");
+    else if (m < 6.0)
+        strcpy(category, "Moderate");
+    else if (m < 7.0)
+        strcpy(category, "Strong");
+    else if (m < 8.0)
+        strcpy(category, "Major");
+    else
+        strcpy(category, "Great");
+}
+
+void logEvent(int id, float mag, char category[]) {
+    FILE *fp = fopen(LOG_FILE, "a");
+
+    time_t t;
+    time(&t);
+
+    fprintf(fp, "Event %d | Magnitude: %.2f | Category: %s | Time: %s",
+            id, mag, category, ctime(&t));
+
+    fclose(fp);
+}
+
+void simulateEarthquakes() {
+    int n;
+    printf("Enter number of events: ");
+    scanf("%d", &n);
+
+    float magnitude, sum = 0, max = 0;
+    char cat[50];
+
+    printf("\n--- Earthquake Simulation Started ---\n\n");
+
+    for (int i = 1; i <= n; i++) {
+        magnitude = generateMagnitude();
+        classify(magnitude, cat);
+
+        printf("Event %d\n", i);
+        printf("  Magnitude: %.2f\n", magnitude);
+        printf("  Category: %s\n", cat);
+        printf("-----------------------------\n");
+
+        logEvent(i, magnitude, cat);
+
+        sum += magnitude;
+        if (magnitude > max)
+            max = magnitude;
+    }
+
+    float avg = sum / n;
+
+    printf("\nSimulation Completed!\n");
+    printf("Average Magnitude: %.2f\n", avg);
+    printf("Strongest Earthquake: %.2f\n", max);
+}
+
+void viewLog() {
+    FILE *fp = fopen(LOG_FILE, "r");
+    if (!fp) {
+        printf("No log file found!\n");
+        return;
+    }
+
+    char line[200];
+    printf("\n--- Earthquake Log ---\n\n");
+    while (fgets(line, sizeof(line), fp)) {
+        printf("%s", line);
+    }
+    fclose(fp);
+}
+
+int main() {
+    srand(time(NULL));
+    int choice;
+
+    while (1) {
+        printf("\n====== EARTHQUAKE SIMULATOR ======\n");
+        printf("1. Run Simulation\n");
+        printf("2. View Log File\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1)
+            simulateEarthquakes();
+        else if (choice == 2)
+            viewLog();
+        else if (choice == 3)
+            break;
+        else
+            printf("Invalid Choice!\n");
+    }
+
+    return 0;
+}
