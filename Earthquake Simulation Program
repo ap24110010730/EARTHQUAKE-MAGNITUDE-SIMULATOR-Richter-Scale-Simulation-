@@ -1,114 +1,90 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
+import random
+import time
 
-#define LOG_FILE "earthquake_log.txt"
+LOG_FILE = "earthquake_log.txt"
 
-float generateMagnitude() {
-    return ((float)rand() / RAND_MAX) * 9.0;
-}
+def generate_magnitude():
+    return random.random() * 9.0
 
-void classify(float m, char category[]) {
-    if (m < 2.0)
-        strcpy(category, "Micro");
-    else if (m < 3.0)
-        strcpy(category, "Very Minor");
-    else if (m < 4.0)
-        strcpy(category, "Minor");
-    else if (m < 5.0)
-        strcpy(category, "Light");
-    else if (m < 6.0)
-        strcpy(category, "Moderate");
-    else if (m < 7.0)
-        strcpy(category, "Strong");
-    else if (m < 8.0)
-        strcpy(category, "Major");
-    else
-        strcpy(category, "Great");
-}
+def classify(m):
+    if m < 2.0:
+        return "Micro"
+    elif m < 3.0:
+        return "Very Minor"
+    elif m < 4.0:
+        return "Minor"
+    elif m < 5.0:
+        return "Light"
+    elif m < 6.0:
+        return "Moderate"
+    elif m < 7.0:
+        return "Strong"
+    elif m < 8.0:
+        return "Major"
+    else:
+        return "Great"
 
-void logEvent(int id, float mag, char category[]) {
-    FILE *fp = fopen(LOG_FILE, "a");
+def log_event(event_id, mag, category):
+    with open(LOG_FILE, "a") as fp:
+        current_time = time.ctime()
+        fp.write(f"Event {event_id} | Magnitude: {mag:.2f} | Category: {category} | Time: {current_time}\n")
 
-    time_t t;
-    time(&t);
+def simulate_earthquakes():
+    n = int(input("Enter number of events: "))
 
-    fprintf(fp, "Event %d | Magnitude: %.2f | Category: %s | Time: %s",
-            id, mag, category, ctime(&t));
+    total = 0
+    max_mag = 0
 
-    fclose(fp);
-}
+    print("\n--- Earthquake Simulation Started ---\n")
 
-void simulateEarthquakes() {
-    int n;
-    printf("Enter number of events: ");
-    scanf("%d", &n);
+    for i in range(1, n + 1):
+        magnitude = generate_magnitude()
+        category = classify(magnitude)
 
-    float magnitude, sum = 0, max = 0;
-    char cat[50];
+        print(f"Event {i}")
+        print(f"  Magnitude: {magnitude:.2f}")
+        print(f"  Category: {category}")
+        print("-----------------------------")
 
-    printf("\n--- Earthquake Simulation Started ---\n\n");
+        log_event(i, magnitude, category)
 
-    for (int i = 1; i <= n; i++) {
-        magnitude = generateMagnitude();
-        classify(magnitude, cat);
+        total += magnitude
+        if magnitude > max_mag:
+            max_mag = magnitude
 
-        printf("Event %d\n", i);
-        printf("  Magnitude: %.2f\n", magnitude);
-        printf("  Category: %s\n", cat);
-        printf("-----------------------------\n");
+    avg = total / n
 
-        logEvent(i, magnitude, cat);
+    print("\nSimulation Completed!")
+    print(f"Average Magnitude: {avg:.2f}")
+    print(f"Strongest Earthquake: {max_mag:.2f}")
 
-        sum += magnitude;
-        if (magnitude > max)
-            max = magnitude;
-    }
+def view_log():
+    try:
+        with open(LOG_FILE, "r") as fp:
+            print("\n--- Earthquake Log ---\n")
+            print(fp.read())
+    except FileNotFoundError:
+        print("No log file found!")
 
-    float avg = sum / n;
+def main():
+    random.seed(time.time())
 
-    printf("\nSimulation Completed!\n");
-    printf("Average Magnitude: %.2f\n", avg);
-    printf("Strongest Earthquake: %.2f\n", max);
-}
+    while True:
+        print("\n====== EARTHQUAKE SIMULATOR ======")
+        print("1. Run Simulation")
+        print("2. View Log File")
+        print("3. Exit")
 
-void viewLog() {
-    FILE *fp = fopen(LOG_FILE, "r");
-    if (!fp) {
-        printf("No log file found!\n");
-        return;
-    }
+        choice = int(input("Enter your choice: "))
 
-    char line[200];
-    printf("\n--- Earthquake Log ---\n\n");
-    while (fgets(line, sizeof(line), fp)) {
-        printf("%s", line);
-    }
-    fclose(fp);
-}
+        if choice == 1:
+            simulate_earthquakes()
+        elif choice == 2:
+            view_log()
+        elif choice == 3:
+            break
+        else:
+            print("Invalid Choice!")
 
-int main() {
-    srand(time(NULL));
-    int choice;
-
-    while (1) {
-        printf("\n====== EARTHQUAKE SIMULATOR ======\n");
-        printf("1. Run Simulation\n");
-        printf("2. View Log File\n");
-        printf("3. Exit\n");
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
-
-        if (choice == 1)
-            simulateEarthquakes();
-        else if (choice == 2)
-            viewLog();
-        else if (choice == 3)
-            break;
-        else
-            printf("Invalid Choice!\n");
-    }
-
-    return 0;
-}
+if __name__ == "__main__":
+    main()
